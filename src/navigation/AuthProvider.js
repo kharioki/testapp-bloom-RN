@@ -1,27 +1,51 @@
 import React, { createContext, useState } from 'react';
-// import { useColorScheme } from 'react-native';
-
+import axios from 'axios';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  // const isDarkMode = useColorScheme() === 'dark';
-  const [user, setUser] = useState(null);
-  // const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [token, setToken] = useState(null);
+  const [error, setError] = useState(null);
 
-  const handleUser = () => {
-    setUser({
-      id: '123',
-      name: 'John Doe',
-      email: 'test@email.com',
-    });
+  let serverUrl = 'https://login-server-rn.herokuapp.com';
+
+  const login = pin => {
+    // handle login
+    axios
+      .post(`${serverUrl}/login`, { pin })
+      .then(data => {
+        setToken(data.token);
+        setIsLoggedIn(true);
+      })
+      .catch(err => {
+        setError(err.response.data);
+      });
+  };
+
+  const logout = tkn => {
+    // handle logout
+    axios
+      .post(`${serverUrl}/logout`, {
+        headers: {
+          Authorization: `${tkn}`,
+        },
+      })
+      .then(res => {
+        console.log(res.data);
+      })
+      .catch(err => {
+        setError(err.response.data);
+      });
   };
 
   return (
     <AuthContext.Provider
       value={{
-        user,
-        setUser,
-        handleUser,
+        login,
+        logout,
+        token,
+        isLoggedIn,
+        error,
       }}>
       {children}
     </AuthContext.Provider>
