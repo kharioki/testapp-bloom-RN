@@ -1,28 +1,35 @@
 import React, { createContext, useState } from 'react';
 import axios from 'axios';
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const [error, setError] = useState(null);
+  const [tokenError, setTokenError] = useState(null);
+  const [logoutMessage, setLogoutMessage] = useState(null);
+  const [isloggingIn, setIsLoggingIn] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   let serverUrl = 'https://login-server-rn.herokuapp.com';
 
   const login = pin => {
+    setIsLoggingIn(true);
     // handle login
     axios
       .post(`${serverUrl}/login`, { pin })
-      .then(data => {
+      .then(({ data }) => {
         setToken(data.token);
-        setIsLoggedIn(true);
+        setIsLoggingIn(false);
       })
       .catch(err => {
         setError(err.response.data);
+        setIsLoggingIn(false);
       });
   };
 
   const logout = tkn => {
+    setIsLoggingOut(true);
     // handle logout
     axios
       .post(`${serverUrl}/logout`, {
@@ -30,11 +37,14 @@ export const AuthProvider = ({ children }) => {
           Authorization: `${tkn}`,
         },
       })
-      .then(res => {
-        console.log(res.data);
+      .then(({ data }) => {
+        setLogoutMessage(data.message);
+        setToken(null);
+        setIsLoggingOut(false);
       })
       .catch(err => {
-        setError(err.response.data);
+        setTokenError(err.response.data);
+        setIsLoggingOut(false);
       });
   };
 
@@ -44,8 +54,11 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         token,
-        isLoggedIn,
         error,
+        tokenError,
+        logoutMessage,
+        isloggingIn,
+        isLoggingOut,
       }}>
       {children}
     </AuthContext.Provider>

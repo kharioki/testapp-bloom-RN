@@ -1,17 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useContext } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ToastAndroid,
+  ActivityIndicator,
+} from 'react-native';
+
+import { AuthContext } from '../navigation/AuthProvider';
 
 export default function HomeScreen({ navigation }) {
+  const { logout, logoutMessage, token, tokenError, isLoggingOut } =
+    useContext(AuthContext);
 
   const handleLogout = () => {
+    logout(token);
     navigation.navigate('Login');
+  };
+
+  const showToast = message => {
+    ToastAndroid.show(message, ToastAndroid.SHORT, ToastAndroid.BOTTOM, 25, 50);
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      {tokenError && showToast(`Oops!!! ${tokenError.error}`)}
+      {logoutMessage && showToast(logoutMessage)}
+
+      <TouchableOpacity
+        style={styles.logoutButton}
+        onPress={handleLogout}
+        disabled={isLoggingOut}>
         <Text style={styles.logoutBtnText}>LOGOUT</Text>
       </TouchableOpacity>
+
+      {isLoggingOut && <ActivityIndicator size="large" color="#414141" />}
     </View>
   );
 }

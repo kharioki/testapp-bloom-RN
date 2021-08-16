@@ -1,22 +1,34 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useContext } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ToastAndroid,
+  ActivityIndicator,
 } from 'react-native';
+import useStateWithCallback from 'use-state-with-callback';
+
 import { AuthContext } from '../navigation/AuthProvider';
 
 export default function LoginScreen({ navigation }) {
-  const { login, token, error } = useContext(AuthContext);
-
-  console.log(token);
-  console.log(error);
-
   let pinLength = 4;
 
-  const [pinVal, setPinVal] = useState('');
+  const { login, token, error, isLoggingIn } = useContext(AuthContext);
+
+  const [pinVal, setPinVal] = useStateWithCallback('', code => {
+    if (code.length === pinLength) {
+      handleLogin(code);
+    }
+  });
+
+  const handleLogin = code => {
+    login(code);
+    if (token) {
+      navigation.navigate('Home');
+      setPinVal('');
+    }
+  };
 
   let renderRowCells = cellsArray => {
     return cellsArray.map((number, index) => {
@@ -24,7 +36,10 @@ export default function LoginScreen({ navigation }) {
         <TouchableOpacity
           key={index}
           style={styles.tile}
-          onPress={() => addPin(number)}>
+          onPress={() => {
+            setPinVal('' + pinVal + number);
+          }}
+          disabled={isLoggingIn}>
           <Text style={styles.tileText}>{number}</Text>
         </TouchableOpacity>
       );
@@ -41,38 +56,13 @@ export default function LoginScreen({ navigation }) {
     );
   };
 
-  console.log(pinVal);
-
-  const addPin = num => {
-    if (pinVal.length === pinLength) {
-      handleLogin(pinVal);
-    } else if (pinVal.length !== pinLength) {
-      const val = '' + pinVal + num;
-      setPinVal(val);
-    }
-  };
-
-  const handleLogin = async () => {
-    await login(pinVal);
-    if (token) {
-      navigation.navigate('Home', { pin });
-    }
-    setPinVal('');
-  };
-
   const showToast = message => {
-    ToastAndroid.show(
-      `Error!!!  ${message}`,
-      ToastAndroid.SHORT,
-      ToastAndroid.BOTTOM,
-      25,
-      50,
-    );
+    ToastAndroid.show(message, ToastAndroid.SHORT, ToastAndroid.BOTTOM, 25, 50);
   };
 
   return (
     <View style={styles.container}>
-      {error && showToast(error.error)}
+      {error && showToast(`Oops!!! ${error.error}`)}
 
       <Text style={styles.textTitle}>Please enter pin to login</Text>
       <Text style={styles.textTitle}>{pinVal}</Text>
@@ -80,7 +70,12 @@ export default function LoginScreen({ navigation }) {
         {Array(pinLength)
           .fill(0)
           .map((_, i) => (
-            <View key={i} style={styles.cellView}>
+            <View key={i} style={[
+              styles.cellView,
+              {
+                borderBottomColor: pinVal[i] ? '#ffffff' : '#000000',
+              },
+            ]}>
               <Text style={styles.cellText}>
                 {pinVal && pinVal.length > 0 ? (pinVal[i] ? '*' : ' ') : ' '}
               </Text>
@@ -93,6 +88,7 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.row}>{renderRowCells([4, 5, 6])}</View>
         <View style={styles.row}>{renderRowCells([7, 8, 9])}</View>
         <View>{renderSingleCell(0)}</View>
+        {isLoggingIn && <ActivityIndicator size="large" color="#414141" />}
       </View>
     </View>
   );
@@ -107,7 +103,8 @@ const styles = StyleSheet.create({
   textTitle: {
     fontSize: 20,
     textAlign: 'center',
-    margin: 20,
+    marginTop: 20,
+    marginBottom: 20,
   },
   inputContainer: {
     flexDirection: 'row',
@@ -117,10 +114,10 @@ const styles = StyleSheet.create({
   cellView: {
     paddingVertical: 11,
     width: 40,
-    margin: 5,
+    margin: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderBottomWidth: 1.5,
+    borderBottomWidth: 4,
   },
   cellText: {
     textAlign: 'center',
@@ -140,17 +137,19 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   tile: {
-    width: 70,
-    height: 90,
+    width: 60,
+    height: 80,
     borderRadius: 4,
-    marginHorizontal: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    marginBottom: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#a2a2a2',
   },
   tileText: {
-    fontSize: 30,
+    fontSize: 24,
     color: '#797979',
   },
   singleTileRow: {
