@@ -1,13 +1,9 @@
 import React, { useContext } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ToastAndroid,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
 import useStateWithCallback from 'use-state-with-callback';
+
+import PinView from '../components/Tiles/PinView';
+import Tile from '../components/Tiles/Tile';
 
 import { AuthContext } from '../navigation/AuthProvider';
 
@@ -33,28 +29,23 @@ export default function LoginScreen({ navigation }) {
   let renderRowCells = cellsArray => {
     return cellsArray.map((number, index) => {
       return (
-        <TouchableOpacity
+        <Tile
           key={index}
-          style={styles.tile}
-          onPress={() => {
-            setPinVal('' + pinVal + number);
-          }}
-          disabled={isLoggingIn}>
-          <Text style={styles.tileText}>{number}</Text>
-        </TouchableOpacity>
+          number={number}
+          onPress={() => setPinVal('' + pinVal + number)}
+          isLoggingIn={isLoggingIn}
+        />
       );
     });
   };
 
-  let renderSingleCell = cell => {
-    return (
-      <View style={styles.singleTileRow}>
-        <View style={styles.tile}>
-          <Text style={styles.tileText}>{cell}</Text>
-        </View>
-      </View>
-    );
-  };
+  let renderSingleCell = number => (
+    <Tile
+      number={number}
+      onPress={() => setPinVal('' + pinVal + number)}
+      isLoggingIn={isLoggingIn}
+    />
+  );
 
   const showToast = message => {
     ToastAndroid.show(message, ToastAndroid.SHORT, ToastAndroid.BOTTOM, 25, 50);
@@ -64,24 +55,7 @@ export default function LoginScreen({ navigation }) {
     <View style={styles.container}>
       {error && showToast(`Oops!!! ${error.error}`)}
 
-      <Text style={styles.textTitle}>Please enter pin to login</Text>
-      <Text style={styles.textTitle}>{pinVal}</Text>
-      <View style={styles.inputContainer}>
-        {Array(pinLength)
-          .fill(0)
-          .map((_, i) => (
-            <View key={i} style={[
-              styles.cellView,
-              {
-                borderBottomColor: pinVal[i] ? '#ffffff' : '#000000',
-              },
-            ]}>
-              <Text style={styles.cellText}>
-                {pinVal && pinVal.length > 0 ? (pinVal[i] ? '*' : ' ') : ' '}
-              </Text>
-            </View>
-          ))}
-      </View>
+      <PinView pinLength={pinLength} pinVal={pinVal} />
 
       <View style={styles.keypadContainer}>
         <View style={styles.row}>{renderRowCells([1, 2, 3])}</View>
@@ -99,31 +73,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
-  },
-  textTitle: {
-    fontSize: 20,
-    textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  cellView: {
-    paddingVertical: 11,
-    width: 40,
-    margin: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderBottomWidth: 4,
-  },
-  cellText: {
-    textAlign: 'center',
-    fontSize: 20,
-    color: '#000000',
-    fontWeight: 'bold',
   },
   keypadContainer: {
     alignItems: 'center',
@@ -135,26 +85,5 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
-  },
-  tile: {
-    width: 60,
-    height: 80,
-    borderRadius: 4,
-    marginLeft: 10,
-    marginRight: 10,
-    marginBottom: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#a2a2a2',
-  },
-  tileText: {
-    fontSize: 24,
-    color: '#797979',
-  },
-  singleTileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });

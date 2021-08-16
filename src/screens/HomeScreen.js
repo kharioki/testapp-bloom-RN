@@ -1,12 +1,6 @@
 import React, { useContext } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ToastAndroid,
-  ActivityIndicator,
-} from 'react-native';
+import { View, StyleSheet, ToastAndroid, ActivityIndicator } from 'react-native';
+import CloseButton from '../components/Buttons/CloseButton';
 
 import { AuthContext } from '../navigation/AuthProvider';
 
@@ -28,12 +22,11 @@ export default function HomeScreen({ navigation }) {
       {tokenError && showToast(`Oops!!! ${tokenError.error}`)}
       {logoutMessage && showToast(logoutMessage)}
 
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={handleLogout}
-        disabled={isLoggingOut}>
-        <Text style={styles.logoutBtnText}>LOGOUT</Text>
-      </TouchableOpacity>
+      <CloseButton
+        text="LOGOUT"
+        handleLogout={handleLogout}
+        isLoggingOut={isLoggingOut}
+      />
 
       {isLoggingOut && <ActivityIndicator size="large" color="#414141" />}
     </View>
@@ -46,20 +39,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ffffff',
-  },
-  logoutButton: {
-    width: '80%',
-    height: 50,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#424242',
-  },
-  logoutBtnText: {
-    padding: 5,
-    fontSize: 20,
-    color: 'black',
-    fontWeight: 'bold',
   },
 });
